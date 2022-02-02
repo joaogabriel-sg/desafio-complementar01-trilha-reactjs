@@ -1,9 +1,16 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { api } from './services/api';
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { api } from "./services/api";
 
 interface GenreResponseProps {
   id: number;
-  name: 'action' | 'comedy' | 'documentary' | 'drama' | 'horror' | 'family';
+  name: "action" | "comedy" | "documentary" | "drama" | "horror" | "family";
   title: string;
 }
 
@@ -32,43 +39,58 @@ interface MoviesContextProps {
 
 export const MoviesContext = createContext({} as MoviesContextProps);
 
-export function MoviesContextProvider({ children }: MoviesContextProviderProps) {
+export function MoviesContextProvider({
+  children,
+}: MoviesContextProviderProps) {
   const [genres, setGenres] = useState<GenreResponseProps[]>([]);
   const [selectedGenreId, setSelectedGenreId] = useState(1);
-  const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>({} as GenreResponseProps);
+  const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>(
+    {} as GenreResponseProps
+  );
   const [movies, setMovies] = useState<MovieProps[]>([]);
-  
+
+  const updateMoviesByGenreId = useCallback((id: number) => {
+    api.get<MovieProps[]>(`movies/?Genre_id=${id}`).then((response) => {
+      setMovies(response.data);
+    });
+  }, []);
+
+  const updateSelectedGenreById = useCallback((id: number) => {
+    api.get<GenreResponseProps>(`genres/${id}`).then((response) => {
+      setSelectedGenre(response.data);
+    });
+  }, []);
+
+  const handleClickButton = useCallback((id: number) => {
+    setSelectedGenreId(id);
+  }, []);
+
   useEffect(() => {
-    api.get<GenreResponseProps[]>('genres').then(response => {
+    api.get<GenreResponseProps[]>("genres").then((response) => {
       setGenres(response.data);
     });
   }, []);
 
   useEffect(() => {
-    api.get<MovieProps[]>(`movies/?Genre_id=${selectedGenreId}`).then(response => {
-      setMovies(response.data);
-    });
-
-    api.get<GenreResponseProps>(`genres/${selectedGenreId}`).then(response => {
-      setSelectedGenre(response.data);
-    });
+    Promise.all([
+      updateMoviesByGenreId(selectedGenreId),
+      updateSelectedGenreById(selectedGenreId),
+    ]);
   }, [selectedGenreId]);
 
-  function handleClickButton(id: number) {
-    setSelectedGenreId(id);
-  }
-
   return (
-    <MoviesContext.Provider value={{ 
-      genres, 
-      selectedGenreId, 
-      movies, 
-      selectedGenre, 
-      handleClickButton 
-    }}>
+    <MoviesContext.Provider
+      value={{
+        genres,
+        selectedGenreId,
+        movies,
+        selectedGenre,
+        handleClickButton,
+      }}
+    >
       {children}
     </MoviesContext.Provider>
-  )
+  );
 }
 
 export function useMovies() {

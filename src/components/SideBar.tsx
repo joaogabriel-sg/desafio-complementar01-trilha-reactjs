@@ -3,18 +3,16 @@ import { useMovies } from "../MoviesContext";
 import { Button } from "./Button";
 
 export function SideBar() {
-  const { 
-    genres, 
-    selectedGenreId, 
-    handleClickButton,
-  } = useMovies();
+  const { genres, selectedGenreId, handleClickButton } = useMovies();
 
   return (
     <nav className="sidebar">
-      <span>Watch<p>Me</p></span>
+      <span>
+        Watch<p>Me</p>
+      </span>
 
       <div className="buttons-container">
-        {genres.map(genre => (
+        {genres.map((genre) => (
           <Button
             key={String(genre.id)}
             title={genre.title}

@@ -1,7 +1,8 @@
+import { memo } from "react";
 import { Header } from "./Header";
 import { MoviesList } from "./MoviesList";
 
-export function Content() {
+export function ContentComponent() {
   return (
     <div className="container">
       <Header />
@@ -11,3 +12,5 @@ export function Content() {
     </div>
   );
 }
+
+export const Content = memo(ContentComponent);
